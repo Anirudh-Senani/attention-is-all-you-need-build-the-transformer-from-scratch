@@ -552,8 +552,44 @@ def init_encoder_layer_parameters(d_model, num_heads, d_ff):
 
     return params
 
-# Step 53 - init_decoder_layer_parameters (not yet solved)
-# TODO: implement
+# Step 53 - init_decoder_layer_parameters
+import torch
+
+def init_decoder_layer_parameters(d_model, num_heads, d_ff):
+    # TODO: return a dict of requires_grad tensors for one decoder layer
+    params = {}
+    params['w_q_self'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_q_self'])
+    params['w_k_self'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_k_self'])
+    params['w_v_self'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_v_self'])
+    params['w_o_self'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_o_self'])
+    params['self_gamma'] = torch.ones((d_model,), dtype=torch.float32, requires_grad=True)
+    params['self_beta'] = torch.zeros((d_model,), dtype=torch.float32, requires_grad=True)
+
+    params['w_q_cross'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_q_cross'])
+    params['w_k_cross'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_k_cross'])
+    params['w_v_cross'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_v_cross'])
+    params['w_o_cross'] = torch.empty((d_model, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w_o_cross'])
+    params['cross_gamma'] = torch.ones((d_model,), dtype=torch.float32, requires_grad=True)
+    params['cross_beta'] = torch.zeros((d_model,), dtype=torch.float32, requires_grad=True)
+
+    params['w1'] = torch.empty((d_model, d_ff), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w1'])
+    params['b1'] = torch.zeros((d_ff,), dtype=torch.float32, requires_grad=True)
+    params['w2'] = torch.empty((d_ff, d_model), dtype=torch.float32, requires_grad=True)
+    torch.nn.init.xavier_uniform_(params['w2'])
+    params['b2'] = torch.zeros((d_model,), dtype=torch.float32, requires_grad=True)
+    params['ffn_gamma'] = torch.ones((d_model,), dtype=torch.float32, requires_grad=True)
+    params['ffn_beta'] = torch.zeros((d_model,), dtype=torch.float32, requires_grad=True)
+
+    return params
 
 # Step 54 - init_embedding_and_projection_parameters (not yet solved)
 # TODO: implement
