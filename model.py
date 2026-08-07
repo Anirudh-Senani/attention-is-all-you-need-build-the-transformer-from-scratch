@@ -156,8 +156,14 @@ def compute_raw_attention_scores(query, key):
     # TODO: matmul query with the transpose of key over the last two axes
     return query @ key.mT
 
-# Step 18 - scale_attention_scores (not yet solved)
-# TODO: implement
+# Step 18 - scale_attention_scores
+import torch
+import math
+
+def scale_attention_scores(scores, d_k):
+    # TODO: divide raw attention scores by sqrt(d_k) to stabilize softmax inputs
+    scale = 1.0/math.sqrt(d_k)
+    return scores * scale
 
 # Step 19 - mask_attention_scores_with_neg_inf (not yet solved)
 # TODO: implement
