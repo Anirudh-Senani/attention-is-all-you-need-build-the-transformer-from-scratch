@@ -51,8 +51,13 @@ def pad_id_sequence(ids, max_len, pad_id):
     ids += [pad_id]*(max(max_len-len(ids),0))
     return ids[:max_len]
 
-# Step 6 - stack_padded_sequences_to_batch (not yet solved)
-# TODO: implement
+# Step 6 - stack_padded_sequences_to_batch
+import torch
+
+def stack_padded_sequences_to_batch(padded_sequences):
+    """Stack a list of equal-length padded id sequences into a 2D LongTensor batch."""
+    # TODO: stack padded id sequences into a (B, L) torch.long tensor
+    return torch.as_tensor(padded_sequences, dtype=torch.long)
 
 # Step 7 - scale_embeddings_by_sqrt_d_model (not yet solved)
 # TODO: implement
