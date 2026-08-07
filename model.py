@@ -48,8 +48,10 @@ def decode_ids_to_tokens(ids, id_to_token):
 # Step 5 - pad_id_sequence
 def pad_id_sequence(ids, max_len, pad_id):
     # TODO: return a list of length exactly max_len, padding with pad_id or truncating.
-    ids += [pad_id]*(max(max_len-len(ids),0))
-    return ids[:max_len]
+    seq_ids = [pad_id]*max_len
+    seq_ids[:min(max_len, len(ids))] = ids[:max_len]
+    # ids += [pad_id]*(max(max_len-len(ids),0))
+    return seq_ids
 
 # Step 6 - stack_padded_sequences_to_batch
 import torch
@@ -473,8 +475,52 @@ def apply_log_softmax_over_vocab(logits):
     log_sum_exp = torch.log(torch.exp(logits - dim_max).sum(dim=-1, keepdim=True))
     return logits - (log_sum_exp + dim_max)
 
-# Step 51 - run_transformer_forward (not yet solved)
-# TODO: implement
+# Step 51 - run_transformer_forward
+import torch
+
+
+def run_transformer_forward(src_ids, tgt_ids, model_params, num_heads, pad_id):
+    # TODO: embed src+tgt, add PE, build masks, run encoder/decoder, project to log probs.
+    emb = model_params['token_embedding']
+    # x_max_len = max([len(ids) for ids in src_ids])
+    # x_ids = [pad_id_sequence(ids.tolist(), x_max_len, pad_id) for ids in src_ids]
+    # x_ids = stack_padded_sequences_to_batch(x_ids)
+    # x = emb[x_ids]
+
+    # y_max_len = max([len(ids) for ids in tgt_ids])
+    # y_ids = [pad_id_sequence(ids.tolist(), y_max_len, pad_id) for ids in tgt_ids]
+    # y_ids = stack_padded_sequences_to_batch(y_ids)
+    # y = emb[y_ids]
+
+    x = emb[src_ids]
+    y = emb[tgt_ids]
+    x_max_len = x.shape[1]
+    y_max_len = y.shape[1]
+
+    max_len = max(x_max_len, y_max_len)
+    d_model = emb.shape[-1]
+
+    x = scale_embeddings_by_sqrt_d_model(x, d_model)
+    y = scale_embeddings_by_sqrt_d_model(y, d_model)
+
+    pe = build_sinusoidal_positional_encoding(max_len, d_model)
+
+    x = add_positional_encoding_to_embeddings(x, pe)
+    y = add_positional_encoding_to_embeddings(y, pe)
+
+    x_pad_mask = build_padding_mask(src_ids, pad_id)
+    y_pad_mask = build_padding_mask(tgt_ids, pad_id)
+
+    y_causal_mask = build_causal_mask(y_max_len)
+
+    src_mask = x_pad_mask
+    tgt_mask = combine_padding_and_causal_masks(y_pad_mask, y_causal_mask)
+
+    encoder_output = stack_encoder_layers(x, model_params['encoder_layers'], num_heads, src_mask)
+    decoder_output = stack_decoder_layers(y, encoder_output, model_params['decoder_layers'], num_heads, src_mask, tgt_mask)
+
+    out = apply_final_output_projection(decoder_output, model_params['output_projection'])
+    return apply_log_softmax_over_vocab(out)
 
 # Step 52 - init_encoder_layer_parameters (not yet solved)
 # TODO: implement
