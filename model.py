@@ -641,9 +641,10 @@ def collect_model_parameters_into_list(encoder_layer_params, decoder_layer_param
 # Step 56 - shift_targets_right_with_start_token
 def shift_targets_right_with_start_token(target_ids, start_token_id):
     # TODO: prepend start_token_id and drop the last column so output shape matches target_ids
-    target_ids[:, 1:] = target_ids[:, :-1].detach().clone()
-    target_ids[:, 0] = start_token_id
-    return target_ids
+    shifted = target_ids.clone()
+    shifted[:, 1:] = target_ids[:, :-1]
+    shifted[:, 0] = start_token_id
+    return shifted
 
 # Step 57 - compute_noam_learning_rate
 def compute_noam_learning_rate(step, d_model, warmup_steps):
@@ -771,12 +772,13 @@ def zero_all_parameter_gradients(parameter_list):
 # Step 71 - compute_batch_training_loss
 def compute_batch_training_loss(src_batch, tgt_batch, model_params, config):
     # TODO: shift targets right, run the forward pass, build smoothed targets, and average the KL loss over non-pad tokens.
+    model_params['token_embedding'] = model_params['src_embedding']
     tgt_ids = shift_targets_right_with_start_token(tgt_batch, config['start_id'])
 
     logprobs = run_transformer_forward(src_batch, tgt_ids, model_params, config['num_heads'], config['pad_id'])
 
-    smoothed_dist = build_uniform_smoothing_distribution(logprobs.shape, config['vocab_size'], config['epsilon'])
-    smoothed_dist = set_confidence_on_gold_tokens(smoothed_dist, tgt_batch, config['smoothing'])
+    smoothed_dist = build_uniform_smoothing_distribution(logprobs.shape, config['vocab_size'], config['smoothing'])
+    smoothed_dist = set_confidence_on_gold_tokens(smoothed_dist, tgt_batch, 1.0-config['smoothing'])
     smoothed_dist = zero_pad_column_and_pad_token_rows(smoothed_dist, tgt_batch, config['pad_id'])
 
     total_loss = compute_label_smoothed_kl_loss(logprobs, smoothed_dist)
