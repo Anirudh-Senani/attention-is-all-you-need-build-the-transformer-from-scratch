@@ -703,8 +703,20 @@ def compute_token_accuracy_ignoring_pad(log_probabilities, gold_token_ids, pad_i
     accuracy = (torch.argmax(log_probabilities, dim=-1) == gold_token_ids).sum()
     return accuracy/non_pad_tokens if non_pad_tokens > 0 else torch.tensor(0.0)
 
-# Step 64 - initialize_adam_optimizer_state (not yet solved)
-# TODO: implement
+# Step 64 - initialize_adam_optimizer_state
+import torch
+
+def initialize_adam_optimizer_state(parameter_list):
+    """Allocate Adam m, v zero buffers and a step counter t=0."""
+    # TODO: allocate zero buffers for first and second moments, plus step counter
+    m = [torch.zeros_like(param, requires_grad=False) for param in parameter_list]
+    v = [torch.zeros_like(param, requires_grad=False) for param in parameter_list]
+    t = 0
+    return dict(
+        m=m,
+        v=v,
+        t=t
+    )
 
 # Step 65 - update_adam_first_moment (not yet solved)
 # TODO: implement
